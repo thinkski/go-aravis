@@ -82,18 +82,18 @@ func (c *Camera) GetSensorSize() (int, int, error) {
 	var width, height int
 	_, err := C.arv_camera_get_sensor_size(
 		c.camera,
-		(*C.int)(unsafe.Pointer(&width)),
-		(*C.int)(unsafe.Pointer(&height)),
+		(*C.gint)(unsafe.Pointer(&width)),
+		(*C.gint)(unsafe.Pointer(&height)),
 	)
 	return int(width), int(height), err
 }
 
 func (c *Camera) SetRegion(x, y, width, height int) {
 	C.arv_camera_set_region(c.camera,
-		C.int(x),
-		C.int(y),
-		C.int(width),
-		C.int(height),
+		C.gint(x),
+		C.gint(y),
+		C.gint(width),
+		C.gint(height),
 	)
 }
 
@@ -101,10 +101,10 @@ func (c *Camera) GetRegion() (int, int, int, int, error) {
 	var x, y, width, height int
 	_, err := C.arv_camera_get_region(
 		c.camera,
-		(*C.int)(unsafe.Pointer(&x)),
-		(*C.int)(unsafe.Pointer(&y)),
-		(*C.int)(unsafe.Pointer(&width)),
-		(*C.int)(unsafe.Pointer(&height)),
+		(*C.gint)(unsafe.Pointer(&x)),
+		(*C.gint)(unsafe.Pointer(&y)),
+		(*C.gint)(unsafe.Pointer(&width)),
+		(*C.gint)(unsafe.Pointer(&height)),
 	)
 	return int(x), int(y), int(width), int(height), err
 }
@@ -113,8 +113,8 @@ func (c *Camera) GetHeightBounds() (int, int, error) {
 	var min, max int
 	_, err := C.arv_camera_get_height_bounds(
 		c.camera,
-		(*C.int)(unsafe.Pointer(&min)),
-		(*C.int)(unsafe.Pointer(&max)),
+		(*C.gint)(unsafe.Pointer(&min)),
+		(*C.gint)(unsafe.Pointer(&max)),
 	)
 	return int(min), int(max), err
 }
@@ -123,8 +123,8 @@ func (c *Camera) GetWidthBounds() (int, int, error) {
 	var min, max int
 	_, err := C.arv_camera_get_width_bounds(
 		c.camera,
-		(*C.int)(unsafe.Pointer(&min)),
-		(*C.int)(unsafe.Pointer(&max)),
+		(*C.gint)(unsafe.Pointer(&min)),
+		(*C.gint)(unsafe.Pointer(&max)),
 	)
 	return int(min), int(max), err
 }
@@ -137,8 +137,8 @@ func (c *Camera) GetBinning() (int, int, error) {
 	var min, max int
 	_, err := C.arv_camera_get_binning(
 		c.camera,
-		(*C.int)(unsafe.Pointer(&min)),
-		(*C.int)(unsafe.Pointer(&max)),
+		(*C.gint)(unsafe.Pointer(&min)),
+		(*C.gint)(unsafe.Pointer(&max)),
 	)
 	return int(min), int(max), err
 }
@@ -276,7 +276,7 @@ func (c *Camera) GVGetPacketDelay() (int64, error) {
 }
 
 func (c *Camera) GVSetPacketDelay(delay int64) {
-	C.arv_camera_gv_set_packet_delay(c.camera, C.long(delay))
+	C.arv_camera_gv_set_packet_delay(c.camera, C.gint64(delay))
 }
 
 func (c *Camera) GVGetPacketSize() (int, error) {
@@ -285,7 +285,7 @@ func (c *Camera) GVGetPacketSize() (int, error) {
 }
 
 func (c *Camera) GVSetPacketSize(size int) {
-	C.arv_camera_gv_set_packet_size(c.camera, C.int(size))
+	C.arv_camera_gv_set_packet_size(c.camera, C.gint(size))
 }
 
 func (c *Camera) GetChunkMode() (bool, error) {
