@@ -3,6 +3,8 @@ package aravis
 // #cgo pkg-config: aravis-0.6
 // #include <arv.h>
 // #include <stdlib.h>
+//
+// void streamCallback_cgo(); // Forward declaration
 import "C"
 import (
 	"fmt"
@@ -46,8 +48,7 @@ func (c *Camera) CreateStream() (Stream, error) {
 
 	s.stream, err = C.arv_camera_create_stream(
 		c.camera,
-		//		C.stream_callback((C.callback_fcn)(unsafe.Pointer(C.),
-		nil,
+		(C.ArvStreamCallback)(unsafe.Pointer(C.streamCallback_cgo)),
 		nil,
 	)
 
