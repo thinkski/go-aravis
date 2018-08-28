@@ -4,7 +4,10 @@ package aravis
 // #include <arv.h>
 // #include <stdlib.h>
 import "C"
-import "unsafe"
+import (
+	"fmt"
+	"unsafe"
+)
 
 type Camera struct {
 	camera *C.struct__ArvCamera
@@ -21,15 +24,151 @@ const (
 	ARV_AUTO_CONTINUOUS = C.ARV_AUTO_CONTINUOUS
 )
 
+//export streamCallback
+func streamCallback() {
+	fmt.Println("streamCallback()")
+}
+
 func NewCamera(name string) (Camera, error) {
-	var err error
 	var c Camera
+	var err error
 
 	cs := C.CString(name)
 	c.camera, err = C.arv_camera_new(cs)
 	C.free(unsafe.Pointer(cs))
 
 	return c, err
+}
+
+func (c *Camera) CreateStream() (Stream, error) {
+	var s Stream
+	var err error
+
+	s.stream, err = C.arv_camera_create_stream(
+		c.camera,
+		//		C.stream_callback((C.callback_fcn)(unsafe.Pointer(C.),
+		nil,
+		nil,
+	)
+
+	return s, err
+}
+
+func (c *Camera) GetDevice() (Device, error) {
+	var d Device
+	var err error
+
+	d.device, err = C.arv_camera_get_device(c.camera)
+
+	return d, err
+}
+
+func (c *Camera) GetVendorName() (string, error) {
+	name, error := C.arv_camera_get_vendor_name(c.camera)
+	return C.GoString(name), error
+}
+
+func (c *Camera) GetModelName() (string, error) {
+	name, error := C.arv_camera_get_model_name(c.camera)
+	return C.GoString(name), error
+}
+
+func (c *Camera) GetDeviceId() (string, error) {
+	id, error := C.arv_camera_get_device_id(c.camera)
+	return C.GoString(id), error
+}
+
+func (c *Camera) GetSensorSize() (int, int, error) {
+	var width, height int
+	_, err := C.arv_camera_get_sensor_size(
+		c.camera,
+		(*C.int)(unsafe.Pointer(&width)),
+		(*C.int)(unsafe.Pointer(&height)),
+	)
+	return int(width), int(height), err
+}
+
+func (c *Camera) SetRegion(x, y, width, height int) {
+	C.arv_camera_set_region(c.camera,
+		C.int(x),
+		C.int(y),
+		C.int(width),
+		C.int(height),
+	)
+}
+
+func (c *Camera) GetRegion() (int, int, int, int, error) {
+	var x, y, width, height int
+	_, err := C.arv_camera_get_region(
+		c.camera,
+		(*C.int)(unsafe.Pointer(&x)),
+		(*C.int)(unsafe.Pointer(&y)),
+		(*C.int)(unsafe.Pointer(&width)),
+		(*C.int)(unsafe.Pointer(&height)),
+	)
+	return int(x), int(y), int(width), int(height), err
+}
+
+func (c *Camera) GetHeightBounds() (int, int, error) {
+	var min, max int
+	_, err := C.arv_camera_get_height_bounds(
+		c.camera,
+		(*C.int)(unsafe.Pointer(&min)),
+		(*C.int)(unsafe.Pointer(&max)),
+	)
+	return int(min), int(max), err
+}
+
+func (c *Camera) GetWidthBounds() (int, int, error) {
+	var min, max int
+	_, err := C.arv_camera_get_width_bounds(
+		c.camera,
+		(*C.int)(unsafe.Pointer(&min)),
+		(*C.int)(unsafe.Pointer(&max)),
+	)
+	return int(min), int(max), err
+}
+
+func (c *Camera) SetBinning() {
+	// TODO
+}
+
+func (c *Camera) GetBinning() (int, int, error) {
+	var min, max int
+	_, err := C.arv_camera_get_binning(
+		c.camera,
+		(*C.int)(unsafe.Pointer(&min)),
+		(*C.int)(unsafe.Pointer(&max)),
+	)
+	return int(min), int(max), err
+}
+
+func (c *Camera) SetPixelFormat() {
+	// TODO
+}
+
+func (c *Camera) GetPixelFormat() {
+	// TODO
+}
+
+func (c *Camera) GetPixelFormatAsString() {
+	// TODO
+}
+
+func (c *Camera) SetPixelFormatFromString() {
+	// TODO
+}
+
+func (c *Camera) GetAvailablePixelFormats() {
+	// TODO
+}
+
+func (c *Camera) GetAvailablePixelFormatsAsDisplayNames() {
+	// TODO
+}
+
+func (c *Camera) GetAvailablePixelFormatsAsStrings() {
+	// TODO
 }
 
 func (c *Camera) StartAcquisition() {
@@ -124,4 +263,32 @@ func (c *Camera) GVGetNumStreamChannels() (int, error) {
 
 func (c *Camera) GVSelectStreamChannels(id int) {
 	C.arv_camera_gv_select_stream_channel(c.camera, C.gint(id))
+}
+
+func (c *Camera) GVGetCurrentStreamChannel() (int, error) {
+	cint, err := C.arv_camera_gv_get_current_stream_channel(c.camera)
+	return int(cint), err
+}
+
+func (c *Camera) GVGetPacketDelay() (int64, error) {
+	cint64, err := C.arv_camera_gv_get_packet_delay(c.camera)
+	return int64(cint64), err
+}
+
+func (c *Camera) GVSetPacketDelay(delay int64) {
+	C.arv_camera_gv_set_packet_delay(c.camera, C.long(delay))
+}
+
+func (c *Camera) GVGetPacketSize() (int, error) {
+	csize, err := C.arv_camera_gv_get_packet_size(c.camera)
+	return int(csize), err
+}
+
+func (c *Camera) GVSetPacketSize(size int) {
+	C.arv_camera_gv_set_packet_size(c.camera, C.int(size))
+}
+
+func (c *Camera) GetChunkMode() (bool, error) {
+	mode, err := C.arv_camera_get_chunk_mode(c.camera)
+	return toBool(mode), err
 }
