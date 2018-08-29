@@ -3,11 +3,9 @@ package aravis
 // #cgo pkg-config: aravis-0.6
 // #include <arv.h>
 // #include <stdlib.h>
-//
-// void streamCallback_cgo(); // Forward declaration
 import "C"
 import (
-	"fmt"
+	"errors"
 	"unsafe"
 )
 
@@ -21,15 +19,10 @@ const (
 )
 
 const (
-	ARV_AUTO_OFF        = C.ARV_AUTO_OFF
-	ARV_AUTO_ONCE       = C.ARV_AUTO_ONCE
-	ARV_AUTO_CONTINUOUS = C.ARV_AUTO_CONTINUOUS
+	AUTO_OFF        = C.ARV_AUTO_OFF
+	AUTO_ONCE       = C.ARV_AUTO_ONCE
+	AUTO_CONTINUOUS = C.ARV_AUTO_CONTINUOUS
 )
-
-//export streamCallback
-func streamCallback() {
-	fmt.Println("streamCallback()")
-}
 
 func NewCamera(name string) (Camera, error) {
 	var c Camera
@@ -48,9 +41,13 @@ func (c *Camera) CreateStream() (Stream, error) {
 
 	s.stream, err = C.arv_camera_create_stream(
 		c.camera,
-		(C.ArvStreamCallback)(unsafe.Pointer(C.streamCallback_cgo)),
+		nil,
 		nil,
 	)
+
+	if s.stream == nil {
+		return Stream{}, errors.New("Failed to create stream")
+	}
 
 	return s, err
 }
@@ -184,6 +181,10 @@ func (c *Camera) AbortAcquisition() {
 	C.arv_camera_abort_acquisition(c.camera)
 }
 
+func (c *Camera) SetAcquisitionMode(mode int) {
+	C.arv_camera_set_acquisition_mode(c.camera, C.ArvAcquisitionMode(mode))
+}
+
 func (c *Camera) SetFrameRate(frameRate float64) {
 	C.arv_camera_set_frame_rate(c.camera, C.double(frameRate))
 }
@@ -222,6 +223,37 @@ func (c *Camera) GetTriggerSource() (string, error) {
 
 func (c *Camera) SoftwareTrigger() {
 	C.arv_camera_software_trigger(c.camera)
+}
+
+func (c *Camera) IsExposureTimeAvailable() (bool, error) {
+	gboolean, err := C.arv_camera_is_exposure_time_available(c.camera)
+	return toBool(gboolean), err
+}
+
+func (c *Camera) IsExposureAutoAvailable() (bool, error) {
+	gboolean, err := C.arv_camera_is_exposure_auto_available(c.camera)
+	return toBool(gboolean), err
+}
+
+func (c *Camera) SetExposureTime(time float64) {
+	C.arv_camera_set_exposure_time(c.camera, C.double(time))
+}
+
+func (c *Camera) GetExposureTime() (float64, error) {
+	cdouble, err := C.arv_camera_get_exposure_time(c.camera)
+	return float64(cdouble), err
+}
+
+func (c *Camera) GetExposureTimeBounds() {
+	// TODO
+}
+
+func (c *Camera) SetExposureTimeAuto(mode int) {
+	C.arv_camera_set_exposure_time_auto(c.camera, C.ArvAuto(mode))
+}
+
+func (c *Camera) GetExposureTimeAuto() {
+	// TODO
 }
 
 func (c *Camera) SetGain(gain float64) {
@@ -292,4 +324,8 @@ func (c *Camera) GVSetPacketSize(size int) {
 func (c *Camera) GetChunkMode() (bool, error) {
 	mode, err := C.arv_camera_get_chunk_mode(c.camera)
 	return toBool(mode), err
+}
+
+func (c *Camera) Close() {
+	C.g_object_unref(C.gpointer(c.camera))
 }
