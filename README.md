@@ -1,3 +1,4 @@
+![Go Report Card](https://goreportcard.com/badge/github.com/thinkski/go-aravis)
 # go-aravis
 
 Go wrapper around libaravis
